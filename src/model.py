@@ -6,12 +6,11 @@ from wordcloud import WordCloud
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.pipeline import Pipeline
 from sklearn.feature_extraction.text import TfidfTransformer
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.model_selection import train_test_split
 import spacy
 nlp = spacy.load('en_core_web_lg')
+from sklearn.metrics.pairwise import cosine_similarity
+import pickle
 
-SEED = 1292023
 CLEAN_DATA = False
 PERFORM_EDA = False
 TRAIN_MODEL = False
@@ -20,10 +19,11 @@ def CleanData():
     data = os.path.join('data/','movies.csv')
     output_data = os.path.join('data/','cleaned_movies.csv')
     df = pd.read_csv(data)
+    df = df[df['runtime'] >= 40]
     df = df[df['original_language'] == 'en']
     df = df[df['status'] == 'Released']
     df = df.drop(['id', 'original_language', 'production_companies', 'budget', 'revenue', 'backdrop_path', 'recommendations',
-                   'poster_path', 'credits','status', 'tagline', 'keywords', 'vote_count', 'popularity'], axis=1)
+                   'poster_path', 'credits','status', 'tagline', 'keywords', 'popularity'], axis=1)
     df = df.dropna()
     df.info()
     df.to_csv(output_data, index=False)
@@ -51,6 +51,39 @@ def EDA(input, stop_words):
 def tokenizer(text):
     return [token.lemma_ for token in nlp(text)]
 
+def Model(input, stop_words):
+    tfidf_vectorizer = Pipeline([
+        ('cv', CountVectorizer(lowercase=True, stop_words=stop_words, tokenizer=tokenizer)),
+        ('tfidf', TfidfTransformer())
+    ])
+
+    tfidf_matrix = tfidf_vectorizer.fit_transform(input)
+    with open('data/tfidf_matrix.pkl', 'wb') as file:
+        pickle.dump(tfidf_matrix, file)
+    with open('data/tfidf_vectorizer.pkl', 'wb') as file:
+        pickle.dump(tfidf_vectorizer, file)
+
+def weighted_rating(x, m, C):
+    v = x['vote_count']
+    R = x['vote_average']
+    return (v/(v+m) * R) + (m/(m+v) * C)
+
+def recommend_movies(user_input, tfidf_matrix, df):
+    C = df['vote_average'].mean()
+    m = df['vote_count'].quantile(0.75)
+    df['score'] = df.apply(lambda x: weighted_rating(x, m, C), axis=1)
+
+    user_input_tfidf = tfidf_vectorizer.transform([user_input])
+    cos_similarities = cosine_similarity(user_input_tfidf, tfidf_matrix).flatten()
+
+    similarity_df = pd.DataFrame(cos_similarities, columns=['similarity'], index=df.index)
+    merged_df = df.merge(similarity_df, left_index=True, right_index=True)
+    relevant_movies = merged_df[merged_df['similarity'] >= 0.1]
+    sorted_movies = relevant_movies.sort_values(by=['similarity', 'score'], ascending=False)
+
+    return sorted_movies.head(20)
+
+
 if __name__ == '__main__':
     # Clean Data
     if CLEAN_DATA:
@@ -60,7 +93,6 @@ if __name__ == '__main__':
     data = os.path.join('data/','cleaned_movies.csv')
     df = pd.read_csv(data)
     input = df.loc[:,'overview']
-    output = df.loc[:,'title']
     stop_words = list(CountVectorizer(stop_words='english').get_stop_words())
 
     # EDA
@@ -69,13 +101,18 @@ if __name__ == '__main__':
 
     # Model
     if TRAIN_MODEL:
-        pipeline = Pipeline([
-            ('cv', CountVectorizer(lowercase=True, stop_words=stop_words, tokenizer=tokenizer)),
-            ('tfidf', TfidfTransformer()),
-            ('model', KNeighborsClassifier())
-        ])
+        Model(input, stop_words)
 
-        X_train, X_test, y_train, y_test = train_test_split(input, output, random_state=SEED)
-        pipeline.fit(X_train, y_train)
+    # Predict
+    with open('data/tfidf_matrix.pkl', 'rb') as file:
+        tfidf_matrix = pickle.load(file)
+    with open('data/tfidf_vectorizer.pkl', 'rb') as file:
+        tfidf_vectorizer = pickle.load(file)
+
+    user_input = "dog gets adopted by family"
+
+    print("-----------------------")
+    recommended_movies = recommend_movies(user_input, tfidf_matrix, df)
+    print(recommended_movies[['title', 'genres', 'release_date', 'runtime', 'score']])
 
     
