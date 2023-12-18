@@ -15,17 +15,17 @@ FilmSeeker is an advanced movie recommender system developed in Python, leveragi
 To install and run FilmSeeker on your Windows machine, follow these steps:
 
 1. **Clone the Repository**: Download the FilmSeeker codebase to your local machine.<br />
-```git clone [https://github.com/EthanStanks/FilmSeeker.git]```
+```git clone https://github.com/EthanStanks/FilmSeeker.git```
 2. **Install Dependencies**: Ensure you have Python installed, then use `pip` to install the required libraries.<br />
 ```pip install -r requirements.txt```
-3. **Run the Script**: Navigate to the src directory and execute the script.<br />
+3. **Run the Script**: Navigate to the ```src``` directory and execute the script.<br />
 ```python model.py```
 
 ## Credits
 
-Data for FilmSeeker is sourced from Kaggle's "Millions of Movies" dataset, available [here](https://www.kaggle.com/datasets/akshaypawar7/millions-of-movies/). This rich dataset has been instrumental in the development and training of our recommendation algorithms.
+Data for FilmSeeker is sourced from Kaggle's "Millions of Movies" dataset, available [here](https://www.kaggle.com/datasets/akshaypawar7/millions-of-movies/). This rich dataset has been instrumental in the development and training of my recommendation algorithms.
 
 ---
 
-**Note**: This project is currently tailored for Windows operating systems and is under active development. The feature set and functionalities may evolve as the project progresses.
+**Note**: This project is currently tailored for ```Windows operating``` systems and is under active development. The feature set and functionalities may evolve as the project progresses.
 
