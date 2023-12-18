@@ -114,14 +114,14 @@ if __name__ == '__main__':
 
     while PREDICT_MOVIES:
         
-        selection = input("Filmio\n--------------------------------\nA) Get Recommendation\nB) Exit\nYour selction: ")
+        selection = input("FilmSeeker\n--------------------------------\nA) Get Recommendation\nB) Exit\nYour selction: ")
         if selection.lower() == 'a':
             os.system('cls')
-            print("Filmio\n--------------------------------")
+            print("FilmSeeker\n--------------------------------")
             user_input = input("What would you like to watch?\nInput: ")
             recommended_movies = recommend_movies(user_input, tfidf_matrix, df)
             os.system('cls')
-            print(f"Filmio\n--------------------------------\nMovies based on '{user_input}':\n\n")
+            print(f"FilmSeeker\n--------------------------------\nMovies based on '{user_input}':\n\n")
             print(recommended_movies[['title', 'genres', 'release_date', 'runtime', 'score']])
             print("--------------------------------")
             input("Press any button to continue...")
