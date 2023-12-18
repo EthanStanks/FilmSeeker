@@ -14,6 +14,7 @@ import pickle
 CLEAN_DATA = False
 PERFORM_EDA = False
 TRAIN_MODEL = False
+PREDICT_MOVIES = True
 
 def CleanData():
     data = os.path.join('data/','movies.csv')
@@ -92,8 +93,9 @@ if __name__ == '__main__':
     # Data Prep
     data = os.path.join('data/','cleaned_movies.csv')
     df = pd.read_csv(data)
-    input = df.loc[:,'overview']
-    stop_words = list(CountVectorizer(stop_words='english').get_stop_words())
+    if PERFORM_EDA or TRAIN_MODEL:
+        input = df.loc[:,'overview']
+        stop_words = list(CountVectorizer(stop_words='english').get_stop_words())
 
     # EDA
     if PERFORM_EDA:
@@ -109,10 +111,26 @@ if __name__ == '__main__':
     with open('data/tfidf_vectorizer.pkl', 'rb') as file:
         tfidf_vectorizer = pickle.load(file)
 
-    user_input = "dog gets adopted by family"
 
-    print("-----------------------")
-    recommended_movies = recommend_movies(user_input, tfidf_matrix, df)
-    print(recommended_movies[['title', 'genres', 'release_date', 'runtime', 'score']])
+    while PREDICT_MOVIES:
+        
+        selection = input("Filmio\n--------------------------------\nA) Get Recommendation\nB) Exit\nYour selction: ")
+        if selection.lower() == 'a':
+            os.system('cls')
+            print("Filmio\n--------------------------------")
+            user_input = input("What would you like to watch?\nInput: ")
+            recommended_movies = recommend_movies(user_input, tfidf_matrix, df)
+            os.system('cls')
+            print(f"Filmio\n--------------------------------\nMovies based on '{user_input}':\n\n")
+            print(recommended_movies[['title', 'genres', 'release_date', 'runtime', 'score']])
+            print("--------------------------------")
+            input("Press any button to continue...")
+            os.system('cls')
+        elif selection.lower() == 'b':
+            PREDICT_MOVIES = False
+        else:
+            print("Please enter 'A' or 'B' only.")
+            input("Press any button to continue...")
+            os.system('cls')
 
     
