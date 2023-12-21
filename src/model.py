@@ -89,7 +89,7 @@ def recommend_movies(user_input, tfidf_matrix, tfidf_vectorizer, df):
     relevant_movies = merged_df[merged_df['similarity'] >= 0.1]
     sorted_movies = relevant_movies.sort_values(by=['similarity', 'score'], ascending=False)
 
-    recommendations = sorted_movies.head(10)[['title', 'genres', 'release_date', 'runtime', 'score']].to_dict('records')
+    recommendations = sorted_movies.head(5)[['title', 'genres', 'release_date', 'runtime', 'score']].to_dict('records')
     return recommendations
 
 def ReadData():
