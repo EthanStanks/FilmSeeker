@@ -64,6 +64,13 @@ def Model(input, stop_words):
     with open('data/tfidf_vectorizer.pkl', 'wb') as file:
         pickle.dump(tfidf_vectorizer, file)
 
+def ReadPickle():
+    with open('data/tfidf_matrix.pkl', 'rb') as file:
+        tfidf_matrix = pickle.load(file)
+    with open('data/tfidf_vectorizer.pkl', 'rb') as file:
+        tfidf_vectorizer = pickle.load(file)
+    return tfidf_matrix, tfidf_vectorizer 
+
 def weighted_rating(x, m, C):
     v = x['vote_count']
     R = x['vote_average']
@@ -106,11 +113,7 @@ if __name__ == '__main__':
         Model(input, stop_words)
 
     # Predict
-    with open('data/tfidf_matrix.pkl', 'rb') as file:
-        tfidf_matrix = pickle.load(file)
-    with open('data/tfidf_vectorizer.pkl', 'rb') as file:
-        tfidf_vectorizer = pickle.load(file)
-
+    tfidf_matrix, tfidf_vectorizer = ReadPickle()
 
     while PREDICT_MOVIES:
         

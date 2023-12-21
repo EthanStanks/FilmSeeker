@@ -1,14 +1,7 @@
 import discord
 from discord.ext import commands
-import pickle
 import model
-
-BOT_KEY = 'bot_key'
-
-with open('data/tfidf_matrix.pkl', 'rb') as file:
-        tfidf_matrix = pickle.load(file)
-with open('data/tfidf_vectorizer.pkl', 'rb') as file:
-        tfidf_vectorizer = pickle.load(file)
+from model import tokenizer # need for model.ReadPickle()
 
 bot = commands.Bot(command_prefix="!", intents=discord.Intents.all())
 
@@ -22,6 +15,13 @@ async def on_ready():
 async def info(ctx):
     await ctx.send("List of Commands: Coming Soon!")
 
-# todo create command for movie recommendations
+if __name__ == '__main__':
+    with open('discord_token.txt', 'r') as file:
+        BOT_KEY = file.read().strip()
+    
+    if not BOT_KEY:
+        print("Failed to read bot key.")
 
-bot.run(BOT_KEY)
+    tfidf_matrix, tfidf_vectorizer = model.ReadPickle()
+    
+    bot.run(BOT_KEY)
