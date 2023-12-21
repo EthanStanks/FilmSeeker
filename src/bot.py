@@ -21,7 +21,7 @@ if __name__ == '__main__':
     
     if not BOT_KEY:
         print("Failed to read bot key.")
-
-    tfidf_matrix, tfidf_vectorizer = model.ReadPickle()
+    else:
+        tfidf_matrix, tfidf_vectorizer = model.ReadPickle()
     
-    bot.run(BOT_KEY)
+        bot.run(BOT_KEY)

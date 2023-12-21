@@ -14,7 +14,7 @@ import pickle
 CLEAN_DATA = False
 PERFORM_EDA = False
 TRAIN_MODEL = False
-PREDICT_MOVIES = True
+PREDICT_MOVIES = False
 
 def CleanData():
     data = os.path.join('data/','movies.csv')
@@ -89,7 +89,8 @@ def recommend_movies(user_input, tfidf_matrix, df):
     relevant_movies = merged_df[merged_df['similarity'] >= 0.1]
     sorted_movies = relevant_movies.sort_values(by=['similarity', 'score'], ascending=False)
 
-    return sorted_movies.head(20)
+    recommendations = sorted_movies.head(20)[['title', 'genres', 'release_date', 'runtime', 'score']].to_dict('records')
+    return recommendations
 
 
 if __name__ == '__main__':
@@ -114,6 +115,9 @@ if __name__ == '__main__':
 
     # Predict
     tfidf_matrix, tfidf_vectorizer = ReadPickle()
+    recommended_movies = recommend_movies("aliens", tfidf_matrix, df)
+    for movie in recommended_movies:
+                print(f"{movie['title']} {movie['genres']} {movie['release_date']} {movie['runtime']} {movie['score']}")
 
     while PREDICT_MOVIES:
         
@@ -125,7 +129,8 @@ if __name__ == '__main__':
             recommended_movies = recommend_movies(user_input, tfidf_matrix, df)
             os.system('cls')
             print(f"FilmSeeker\n--------------------------------\nMovies based on '{user_input}':\n\n")
-            print(recommended_movies[['title', 'genres', 'release_date', 'runtime', 'score']])
+            for movie in recommended_movies:
+                print(f"{movie['title']} {movie['genres']} {movie['release_date']} {movie['runtime']} {movie['score']}")
             print("--------------------------------")
             input("Press any button to continue...")
             os.system('cls')
