@@ -1,7 +1,7 @@
 # FilmSeeker
 
 ## Description
-FilmSeeker is an advanced movie recommender system developed in Python, leveraging state-of-the-art Natural Language Processing (NLP) and Machine Learning techniques. Primarily aimed for integration into a Discord bot, FilmSeeker showcases algorithmic implementations for personalized content recommendation.
+FilmSeeker is an advanced movie recommender system developed in Python, leveraging state-of-the-art Natural Language Processing (NLP) and Machine Learning techniques. Integrated into a Discord bot for an easy interface, FilmSeeker showcases algorithmic implementations for personalized content recommendation.
 
 ## Features
 - **NLP-Based Analysis**: Utilizes natural language processing to understand and interpret user preferences and movie descriptions.
@@ -39,5 +39,5 @@ Data for FilmSeeker is sourced from Kaggle's "Millions of Movies" dataset, avail
 
 ---
 
-**Note**: This project is currently tailored for ```Windows operating``` systems and is under active development. The feature set and functionalities may evolve as the project progresses.
+**Note**: This project is currently tailored for ```Windows operating``` systems.
 
