@@ -3,6 +3,8 @@ from discord.ext import commands
 import model
 from model import tokenizer # need for model.ReadPickle()
 
+df = model.ReadData()
+tfidf_matrix, tfidf_vectorizer = model.ReadPickle()
 bot = commands.Bot(command_prefix="!", intents=discord.Intents.all())
 
 @bot.event
@@ -15,6 +17,19 @@ async def on_ready():
 async def info(ctx):
     await ctx.send("List of Commands: Coming Soon!")
 
+@bot.command()
+async def r(ctx, *, user_input: str):
+    recommendations = model.recommend_movies(user_input,tfidf_matrix,tfidf_vectorizer,df)
+    response = f"I recommend these movies for: {user_input}\n```"
+    last = len(recommendations) - 1
+    for i, movie in enumerate(recommendations):
+        movie_line = f"{i+1}) {movie['title']}\nGenres: {movie['genres']}\nRelease Date: {movie['release_date']}\nRun Time: {movie['runtime']}\nRating: {movie['score']}"
+        response += movie_line
+        if i is not last:
+            response += "\n------------------------------------------------------------\n"
+    response += "```"
+    await ctx.send(response)
+
 if __name__ == '__main__':
     with open('discord_token.txt', 'r') as file:
         BOT_KEY = file.read().strip()
@@ -22,6 +37,4 @@ if __name__ == '__main__':
     if not BOT_KEY:
         print("Failed to read bot key.")
     else:
-        tfidf_matrix, tfidf_vectorizer = model.ReadPickle()
-    
         bot.run(BOT_KEY)

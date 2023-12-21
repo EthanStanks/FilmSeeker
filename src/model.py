@@ -76,7 +76,7 @@ def weighted_rating(x, m, C):
     R = x['vote_average']
     return (v/(v+m) * R) + (m/(m+v) * C)
 
-def recommend_movies(user_input, tfidf_matrix, df):
+def recommend_movies(user_input, tfidf_matrix, tfidf_vectorizer, df):
     C = df['vote_average'].mean()
     m = df['vote_count'].quantile(0.75)
     df['score'] = df.apply(lambda x: weighted_rating(x, m, C), axis=1)
@@ -89,8 +89,13 @@ def recommend_movies(user_input, tfidf_matrix, df):
     relevant_movies = merged_df[merged_df['similarity'] >= 0.1]
     sorted_movies = relevant_movies.sort_values(by=['similarity', 'score'], ascending=False)
 
-    recommendations = sorted_movies.head(20)[['title', 'genres', 'release_date', 'runtime', 'score']].to_dict('records')
+    recommendations = sorted_movies.head(10)[['title', 'genres', 'release_date', 'runtime', 'score']].to_dict('records')
     return recommendations
+
+def ReadData():
+    data = os.path.join('data/','cleaned_movies.csv')
+    df = pd.read_csv(data)
+    return df
 
 
 if __name__ == '__main__':
@@ -99,8 +104,7 @@ if __name__ == '__main__':
         CleanData()
 
     # Data Prep
-    data = os.path.join('data/','cleaned_movies.csv')
-    df = pd.read_csv(data)
+    df = ReadData()
     if PERFORM_EDA or TRAIN_MODEL:
         input = df.loc[:,'overview']
         stop_words = list(CountVectorizer(stop_words='english').get_stop_words())
@@ -115,7 +119,7 @@ if __name__ == '__main__':
 
     # Predict
     tfidf_matrix, tfidf_vectorizer = ReadPickle()
-    recommended_movies = recommend_movies("aliens", tfidf_matrix, df)
+    recommended_movies = recommend_movies("aliens", tfidf_matrix,tfidf_vectorizer, df)
     for movie in recommended_movies:
                 print(f"{movie['title']} {movie['genres']} {movie['release_date']} {movie['runtime']} {movie['score']}")
 
