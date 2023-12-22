@@ -20,12 +20,15 @@ def CleanData():
     data = os.path.join('data/','movies.csv')
     output_data = os.path.join('data/','cleaned_movies.csv')
     df = pd.read_csv(data)
+    df = df[df['vote_average'] >= 4.5]
+    df = df[df['vote_count'] >= 100]
     df = df[df['runtime'] >= 40]
     df = df[df['original_language'] == 'en']
     df = df[df['status'] == 'Released']
-    df = df.drop(['id', 'original_language', 'production_companies', 'budget', 'revenue', 'backdrop_path', 'recommendations',
-                   'poster_path', 'credits','status', 'tagline', 'keywords', 'popularity'], axis=1)
+    df = df.drop(['id', 'original_language', 'production_companies', 'budget', 'revenue', 'backdrop_path', 'recommendations'
+                  ,'credits','status', 'tagline', 'keywords', 'popularity'], axis=1)
     df = df.dropna()
+    df['poster_path'] = "https://image.tmdb.org/t/p/w500/" + df['poster_path']
     df.info()
     df.to_csv(output_data, index=False)
 
@@ -78,18 +81,21 @@ def weighted_rating(x, m, C):
 
 def recommend_movies(user_input, tfidf_matrix, tfidf_vectorizer, df):
     C = df['vote_average'].mean()
+    test = df['vote_count'].mean()
     m = df['vote_count'].quantile(0.75)
+    print(test)
     df['score'] = df.apply(lambda x: weighted_rating(x, m, C), axis=1)
 
     user_input_tfidf = tfidf_vectorizer.transform([user_input])
     cos_similarities = cosine_similarity(user_input_tfidf, tfidf_matrix).flatten()
-
     similarity_df = pd.DataFrame(cos_similarities, columns=['similarity'], index=df.index)
+
     merged_df = df.merge(similarity_df, left_index=True, right_index=True)
     relevant_movies = merged_df[merged_df['similarity'] >= 0.1]
     sorted_movies = relevant_movies.sort_values(by=['similarity', 'score'], ascending=False)
+    #sorted_movies = relevant_movies.sort_values(by=['score'], ascending=False)
 
-    recommendations = sorted_movies.head(5)[['title', 'genres', 'release_date', 'runtime', 'score']].to_dict('records')
+    recommendations = sorted_movies.head(5)[['title', 'genres', 'release_date', 'runtime', 'vote_average','vote_count','score','poster_path']].to_dict('records')
     return recommendations
 
 def ReadData():
@@ -119,9 +125,9 @@ if __name__ == '__main__':
 
     # Predict
     tfidf_matrix, tfidf_vectorizer = ReadPickle()
-    recommended_movies = recommend_movies("aliens", tfidf_matrix,tfidf_vectorizer, df)
+    recommended_movies = recommend_movies("man finds love", tfidf_matrix,tfidf_vectorizer, df)
     for movie in recommended_movies:
-                print(f"{movie['title']} {movie['genres']} {movie['release_date']} {movie['runtime']} {movie['score']}")
+                print(f"{movie['title']} {movie['genres']} {movie['release_date']} {movie['runtime']} {movie['vote_average']} {movie['vote_count']} {movie['score']} {movie['poster_path']}")
 
     while PREDICT_MOVIES:
         

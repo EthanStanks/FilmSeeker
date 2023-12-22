@@ -20,15 +20,20 @@ async def info(ctx):
 @bot.command()
 async def r(ctx, *, user_input: str):
     recommendations = model.recommend_movies(user_input,tfidf_matrix,tfidf_vectorizer,df)
-    response = f"I recommend these movies for: {user_input}\n```"
-    last = len(recommendations) - 1
-    for i, movie in enumerate(recommendations):
-        movie_line = f"{i+1}) {movie['title']}\nGenres: {movie['genres']}\nRelease Date: {movie['release_date']}\nRun Time: {movie['runtime']}\nRating: {movie['score']}"
-        response += movie_line
-        if i is not last:
-            response += "\n------------------------------------------------------------\n"
-    response += "```"
-    await ctx.send(response)
+    size = len(recommendations)
+    if size > 0:
+        response = f"I recommend these movies for: {user_input}\n"
+        await ctx.send(response)
+        #last = size - 1
+        for i, movie in enumerate(recommendations):
+            movie_line = f"{i+1}) {movie['title']}\nGenres: {movie['genres']}\nRelease Date: {movie['release_date']}\nRun Time: {movie['runtime']}\nRating: {movie['score']}\nPoster: {movie['poster_path']}"
+            await ctx.send(movie_line)
+            #response += movie_line
+            #if i is not last:
+                #response += "\n------------------------------------------------------------\n"
+    else: 
+        response = f"I can't find any recommendations for: {user_input}. Please try something else."
+        await ctx.send(response)
 
 if __name__ == '__main__':
     with open('discord_token.txt', 'r') as file:
