@@ -15,6 +15,7 @@ CLEAN_DATA = False
 PERFORM_EDA = False
 TRAIN_MODEL = False
 PREDICT_MOVIES = False
+NUM_TO_RECOMMEND = 5
 
 def CleanData():
     data = os.path.join('data/','movies.csv')
@@ -79,7 +80,7 @@ def weighted_rating(x, m, C):
     R = x['vote_average']
     return (v/(v+m) * R) + (m/(m+v) * C)
 
-def recommend_movies(user_input, tfidf_matrix, tfidf_vectorizer, df):
+def recommend_movies(user_input, tfidf_matrix, tfidf_vectorizer, df, nums_to_recommend):
     C = df['vote_average'].mean()
     m = df['vote_count'].quantile(0.75)
     df['score'] = df.apply(lambda x: weighted_rating(x, m, C), axis=1)
@@ -91,9 +92,8 @@ def recommend_movies(user_input, tfidf_matrix, tfidf_vectorizer, df):
     merged_df = df.merge(similarity_df, left_index=True, right_index=True)
     relevant_movies = merged_df[merged_df['similarity'] >= 0.1]
     sorted_movies = relevant_movies.sort_values(by=['similarity', 'score'], ascending=False)
-    #sorted_movies = relevant_movies.sort_values(by=['score'], ascending=False)
 
-    recommendations = sorted_movies.head(5)[['title', 'genres', 'release_date', 'runtime', 'vote_average','vote_count','score','poster_path']].to_dict('records')
+    recommendations = sorted_movies.head(nums_to_recommend)[['title', 'genres', 'release_date', 'runtime', 'vote_average','vote_count','score','poster_path']].to_dict('records')
     return recommendations
 
 def ReadData():
@@ -123,7 +123,7 @@ if __name__ == '__main__':
 
     # Predict
     tfidf_matrix, tfidf_vectorizer = ReadPickle()
-    recommended_movies = recommend_movies("man finds love", tfidf_matrix,tfidf_vectorizer, df)
+    recommended_movies = recommend_movies("man finds love", tfidf_matrix,tfidf_vectorizer, df, NUM_TO_RECOMMEND)
     for movie in recommended_movies:
                 print(f"{movie['title']} {movie['genres']} {movie['release_date']} {movie['runtime']} {movie['vote_average']} {movie['vote_count']} {movie['score']} {movie['poster_path']}")
 
@@ -134,7 +134,7 @@ if __name__ == '__main__':
             os.system('cls')
             print("FilmSeeker\n--------------------------------")
             user_input = input("What would you like to watch?\nInput: ")
-            recommended_movies = recommend_movies(user_input, tfidf_matrix, df)
+            recommended_movies = recommend_movies(user_input, tfidf_matrix, df, NUM_TO_RECOMMEND)
             os.system('cls')
             print(f"FilmSeeker\n--------------------------------\nMovies based on '{user_input}':\n\n")
             for movie in recommended_movies:

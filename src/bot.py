@@ -6,6 +6,7 @@ from model import tokenizer # need for model.ReadPickle()
 df = model.ReadData()
 tfidf_matrix, tfidf_vectorizer = model.ReadPickle()
 bot = commands.Bot(command_prefix="!", intents=discord.Intents.all())
+nums_to_recommend = 5
 
 @bot.event
 async def on_ready():
@@ -15,24 +16,34 @@ async def on_ready():
 
 @bot.command()
 async def info(ctx):
-    await ctx.send("List of Commands: Coming Soon!")
+    await ctx.send("List of Commands ✍️\n```!recommend 'details' - Recommends you a movie based on the details you give it. Ex: !r Batman and Superman\n!amount # - Changes the amount of recommendation you receive. Ex: !amount 3```")
 
 @bot.command()
-async def r(ctx, *, user_input: str):
-    recommendations = model.recommend_movies(user_input,tfidf_matrix,tfidf_vectorizer,df)
+async def amount(ctx, user_input):
+    try:
+        temp = int(user_input)
+        if temp > 0:
+            global nums_to_recommend
+            nums_to_recommend = temp
+            await ctx.send(f"Now recommending {nums_to_recommend} movies.")
+        else:
+            await ctx.send("Please enter a number greater than 0.")
+    except ValueError:
+        await ctx.send("Please enter a valid number.")
+
+@bot.command()
+async def recommend(ctx, *, user_input: str):
+    recommendations = model.recommend_movies(user_input,tfidf_matrix,tfidf_vectorizer,df, nums_to_recommend)
     size = len(recommendations)
     if size > 0:
-        response = f"I recommend these movies for: {user_input}\n"
+        response = f"# Recommendations for: \"{user_input}\" 🎥🍿\n"
         await ctx.send(response)
         #last = size - 1
         for i, movie in enumerate(recommendations):
-            movie_line = f"{i+1}) {movie['title']}\nGenres: {movie['genres']}\nRelease Date: {movie['release_date']}\nRun Time: {movie['runtime']}\nRating: {movie['score']}\nPoster: {movie['poster_path']}"
+            movie_line = f"### {i+1}) {movie['title']}\nGenres: {movie['genres']}\nRelease Date: {movie['release_date']}\nRun Time: {movie['runtime']}\nRating: {format(movie['score'], '.2f')}\nPoster: [Poster]({movie['poster_path']})"
             await ctx.send(movie_line)
-            #response += movie_line
-            #if i is not last:
-                #response += "\n------------------------------------------------------------\n"
     else: 
-        response = f"I can't find any recommendations for: {user_input}. Please try something else."
+        response = f"I can't find any recommendations for {user_input}. Please try something else."
         await ctx.send(response)
 
 if __name__ == '__main__':
