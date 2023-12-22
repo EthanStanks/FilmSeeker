@@ -81,9 +81,7 @@ def weighted_rating(x, m, C):
 
 def recommend_movies(user_input, tfidf_matrix, tfidf_vectorizer, df):
     C = df['vote_average'].mean()
-    test = df['vote_count'].mean()
     m = df['vote_count'].quantile(0.75)
-    print(test)
     df['score'] = df.apply(lambda x: weighted_rating(x, m, C), axis=1)
 
     user_input_tfidf = tfidf_vectorizer.transform([user_input])
